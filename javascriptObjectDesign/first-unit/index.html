@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+<script >
+  const arr = [1, 3, 5];
+for (let item of arr) {
+  console.log(item);
+}
+window.name = 'john';
+
+function makeSound(animal) {
+  animal.sound()
+}
+function Chickren() {
+
+}
+Chickren.prototype.sound = () => {
+  console.log('咯咯咯')
+}
+function Duck() {
+
+}
+Duck.prototype.sound = () => {
+  console.log('呱呱呱')
+}
+makeSound(new Chickren())
+makeSound(new Duck())
+object.create = object.create || function(obj) {
+  const F = () => {}
+  F.prototype = obj
+  return new F()
+}
+Function.prototype.bind = Function.prototype.bind || function() {
+  const that = this
+  const context = [].shift.call(arguments)
+  const args = [].slice.call(arguments)
+  return function () {
+    return that.call(context, [].concat(args, [].slice(arguments)))
+  }
+}
+const mul = () => {
+  const o = {}
+  const str = [].join.apply(null, arguments)
+  if (o[str]) {
+    return o[str]
+  }
+  const args = [].slice.apply(null, arguments)
+  let a 
+  for (let i = 0; i < args.length; i++) {
+    a = a* args[i]
+  }
+  return o[str] = a
+}
+
+</script>
+</html>
