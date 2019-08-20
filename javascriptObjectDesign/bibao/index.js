@@ -79,6 +79,15 @@ funcA()() // 2
 // 而f2的存在依赖于f1，因此f1也始终在内存中，不会在调用结束后，被垃圾回收机制（garbage collection）回收。
 // 第二种是执行函数 并没保持对变量的引用 所以每次调用都是重新执行一次函数。
 
+var funcA = (function () {
+  var a = 1
+  return function () {
+    a++
+    console.log(a)
+  }
+})()
+funcA()
+funcA()
 // 继续第一个
 var mult1 = function () {
   var cache = {}
@@ -126,3 +135,184 @@ var mult2 = (function () {
 mult2(1, 2, 3)
 mult2(1, 2, 3)
 mult2(2, 2, 3)
+
+// 3.2.1  高阶函数
+// 1 函数作为参数传递  回调函数
+var appendDiv = function (callback) {
+  for (var i = 0; i < 100; i++) {
+    var div = document.createElement('div')
+    div.innerHTML = i
+    document.body.appendChild(div)
+    if (typeof callback === 'function') {
+      callback(div)
+    }
+  }
+}
+
+appendDiv(function (data) {
+  data.style.display = 'none'
+})
+
+// 2  Array.prototype.sort();
+[1, 4, 5, 1, 11, 12, 34, 23].sort(function (a, b) {
+  return b - a
+})
+// [5,4,1]
+[1, 4, 5].sort(function (a, b) {
+  return b - a
+})
+// [1,4,5]
+
+
+// 将函数作为返回值输出
+var getSingle = function (fn) {
+  var ret
+  return function () {
+    console.log(ret)
+    return ret || fn.apply(this, arguments)
+  }
+}
+var getScript = getSingle(function () {
+  return document.createElement('script')
+})
+var script1 = getScript()
+var script2 = getScript()
+console.log(script1) // '<script></script>'
+console.log(script2) // '<script></script>'
+console.log(script1 === script2) // true
+
+
+// 高阶函数实现aop
+Function.prototype.beforeFn = function (fn) {
+  var _self = this
+  console.log('000')
+  console.log(this)
+  console.log('000')
+  return function () {
+    console.log(this)
+    fn.apply(this, arguments) //执行新函数 修正this
+    return _self.apply(this, arguments) // 执行原函数
+  }
+}
+
+var func = function () {
+  console.log(2)
+}
+func = func.beforeFn(function () {
+  console.log(1)
+})
+console.log(func)
+func()
+
+// 函数柯里化
+var cost = (function () {
+  var arg = []
+  return function () {
+    if (arguments.length === 0) {
+      var mon = 0
+      for (var i = 0; i < arg.length; i++) {
+        mon += arg[i]
+      }
+      return mon
+    } else {
+      [].push.apply(arg, arguments)
+    }
+  }
+})()
+
+cost(100)
+cost(200)
+
+// 柯里化函数   应该是收集参数的
+var currying = function (fn) {
+  var arg = []
+  return function fac() {
+    if (arguments.length === 0) {
+      return fn.apply(this, arg) // 执行消费函数
+    } else {
+      [].push.apply(arg, arguments) // 收集函数
+      return fac //继续收集参数
+    }
+  }
+}
+
+// 具体的执行计算函数
+var cost1 = function () {
+  var money = 0
+  for (var i = 0; i < arguments.length; i++) {
+    money += arguments[i]
+  }
+  console.log(money)
+  return money
+}
+var cost2 = currying(cost1)
+cost2(1)
+cost2(2)
+cost2(3)
+
+// 柯里化的核心是，收集参数 最后一步计算， 一个是收集参数的函数，一个是计算的函数， 执行函数的单一性原则。
+
+
+// uncurrying
+var obj = {
+  'length': 1,
+  '0': 1
+}
+Function.prototype.uncurrying = function () {
+  var self = this
+  return function () {
+    var obj = Array.prototype.shift.apply(arguments)
+    console.log(obj) // {0: 1, length: 1}
+    return self.apply(obj, arguments)
+  }
+}
+var push = Array.prototype.push.uncurrying();
+push(obj, 2)
+console.log(obj) //{0:1, 1:2, length: 2}
+
+// 另一种实现方式 暂时未懂
+Function.prototype.uncurrying = function () {
+  var self = this
+  return function () {
+    return Function.prototype.call.apply(self, arguments)
+  }
+}
+
+// 函数节流 节流原理， 将即将被执行的函数延迟一段时间执行， 如果该延迟执行还没有完成，则忽略接下来的调用该函数的请求
+var throttle = function (fn, intervel) {
+  var _self = fn,
+    timer,
+    firstTime = true
+  return function () {
+    var arg = arguments,
+      _me = this  // 
+
+    if (firstTime) {
+      _self.apply(_me, arg) // 将fn函数的this指向执行时的上下文
+      return firstTime = false
+    }
+
+    if (timer) {
+      return false
+    }
+    timer = setTimeout(function () {
+      clearTimeout(timer)
+      timer = null
+      _self.apply(_me, arg)
+    }, intervel || 500)
+  }
+}
+
+var obj = {
+  name: 'lili',
+  getConsole: () => {
+    console.log(this)
+    console.log(this.name)
+  },
+  getConsole1: function() {
+    console.log(this.name)
+  }
+}
+
+obj.onresize = throttle(obj.getConsole, 500)
+obj.onresize1 = throttle(obj.getConsole1, 500)

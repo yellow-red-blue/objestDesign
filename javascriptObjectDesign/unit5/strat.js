@@ -1,7 +1,7 @@
 // 策略模式的核心就是  定义一系列算法。把他们一个个封装起来。并且是他们可以相互替换
 // 普通写法
 // 计算奖金 A, b, c
-var calBouns = (level, salary) {
+var calBouns = (level, salary) => {
   if (level === 'a') {
     return salary * 5
   }
