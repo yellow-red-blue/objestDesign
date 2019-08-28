@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <input id="input1" placeholder="请输入账号" type="text">
+  <input placeholder="请输入密码" type="password">
+  <div id="div1">确定</div>
+</body>
+<script>
+  var checkValueStartor = {
+    isEmptyValue(value, errMsg) {
+      if (value.length === 0) {
+        return errMsg
+      }
+    },
+    isMaxLength(value, length, errMsg) {
+      if (value.length > length) {
+        return errMsg
+      }
+    },
+    isMinLength(value, length, errMsg) {
+      if (value.length < length) {
+        return errMsg
+      }
+    }
+  }
+  var valitor = function () {
+    this.cache = [] // 存储处理结果函数
+  }
+  valitor.prototype.add = function (value, rule, errMsg) {
+    var _self = this
+    var arg = rule.split(':')
+    var stargy = arg.shift()
+    arg.unshift(value)
+    arg.push(errMsg)
+    this.cache.push(function () {
+      return checkValueStartor[stargy].apply(_self, arg)
+    })
+  }
+  valitor.prototype.start = function () {
+    for (let i = 0; i < this.cache.length; i++) {
+      let func = this.cache[i]
+      var errMsg = func()
+      if (errMsg) {
+        return errMsg
+      }
+    }
+  }
+  var valitorDom = function () {
+    var val = new valitor()
+    var
+    val.add()
+  }
+  document.getElementById('div1').onclick = function () {
+    var value = document.getElementById('input1').value
+    var val = new valitor()
+    val.add(value, 'isMaxLength:8', '最大')
+    var errMsg = val.start()
+    console.log(errMsg)
+  }
+</script>
+
+</html>
