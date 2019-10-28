@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>22222</div>
+  <div id=""></div>
+  <div class="name"></div>
+  <div class="age"></div>
+  <div class="fav"></div>
+  <!--#include file="/html/public/header.html"-->
+</body>
+<script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+<script>
+  const Event = {}
+  Event.cacheList = []
+  // 将订阅函数根据订阅类型存入缓存列表
+  Event.listen = function (type, fn) {
+    if (!this.cacheList[type]) {
+      this.cacheList[type] = []
+    }
+    this.cacheList[type].push(fn)
+  }
+
+  Event.trigger = function () {
+    const type = Array.prototype.shift.apply(arguments)
+    if (!type) {
+      return false
+    }
+    const fns = this.cacheList[type]
+    for (let i = 0; i < fns.length; i++) {
+      const fn = fns[i]
+      fn.apply(this, arguments)
+    }
+  }
+
+  Event.remove = function (type, fn) {
+    const fns = this.cacheList[type]
+    if (!fn) {
+      fns && (fns.length = 0)
+    }
+    for (let i = 0; i < fns.length; i++) {
+      const _fn = fns[i]
+      if (_fn === fn) {
+        fns.splice(i, 1)
+      }
+    }
+  }
+
+  function initObser(obj) {
+    obj = obj || {}
+    for (let key in Event) {
+      obj[key] = Event[key]
+    }
+    return obj
+  }
+  var userInfo = {
+    name: 'll',
+    age: 18,
+    fav: 'play'
+  }
+  var sale = initObser()
+  setTimeout(() => {
+    sale.trigger('userInfo', userInfo)
+  }, 1500)
+
+  setTimeout(() => {
+    sale.listen('userInfo', function (userInfo) {
+      $('.name').html(userInfo.name)
+    })
+  }, 1000)
+  setTimeout(() => {
+    sale.listen('userInfo', function (userInfo) {
+      $('.age').html(userInfo.age)
+    })
+  }, 1000)
+  setTimeout(() => {
+    sale.listen('userInfo', function (userInfo) {
+      $('.fav').html(userInfo.fav)
+    })
+  }, 1000)
+</script>
+
+</html>

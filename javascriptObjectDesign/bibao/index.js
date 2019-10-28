@@ -66,7 +66,16 @@ var funcA = function () {
     console.log(a)
   }
 }
-
+var Type = {}
+var type = ['String', 'Array']
+for (var i = 0; i < type.length; i++) {
+  Type['is' + type[i]] = function (obj) {
+    console.log(i) // 'Array, Array'   函数延迟执行的时候的数组已经循环完毕，此时需要闭包 或者let
+    return Object.prototype.toString.call(obj) === `[object ${type[i]}]`
+  }
+}
+Type.isArray([])
+Type.isString('')
 var f = funcA()
 f() //2
 f() // 3
@@ -191,9 +200,9 @@ Function.prototype.beforeFn = function (fn) {
     return _self.apply(this, arguments) // 执行原函数
   }
 }
-Function.prototype.afterFn = function(fn) {
+Function.prototype.afterFn = function (fn) {
   var _self = this
-  return function() {
+  return function () {
     var ret = _self.apply(this, arguments) // 执行原函数 修正this
     console.log(ret)
     fn.apply(this, arguments) // 执行新函数
@@ -204,9 +213,9 @@ var func = function () {
   console.log(2)
 }
 
-func= func.beforeFn(function(){
+func = func.beforeFn(function () {
   console.log(1)
-  }).afterFn(function(){
+}).afterFn(function () {
   console.log(3)
 })
 func()
@@ -366,10 +375,10 @@ var addEvent = function (elem, type, handler) {
     return elem.attachEvent('on' + type, handler)
   }
 }
-var add1 = addEvent('div1', 'click', function(){
+var add1 = addEvent('div1', 'click', function () {
   console.log(1)
 })
-var add1 = addEvent('div2', 'click', function(){
+var add1 = addEvent('div2', 'click', function () {
   console.log(2)
 })
 // 每次绑定都会走一遍条件语句
@@ -387,29 +396,29 @@ var addEvent = (function () {
     }
   }
 })()
-var add1 = addEvent('div2', 'click', function(){
+var add1 = addEvent('div2', 'click', function () {
   console.log(2)
 })
 // 必须执行一次if条件，，如果我们没用到就会造成浪费
 
 // 
-var addEvent = function(elem, type, handler) {
+var addEvent = function (elem, type, handler) {
   if (window.addEventListener) {
     addEvent = function (elem, type, handler) {
       return elem.addEventListener(type, handler, false)
     }
   }
   if (window.attachEvent) {
-    addEvent =  function (elem, type, handler) {
+    addEvent = function (elem, type, handler) {
       return elem.attachEvent('on' + type, handler)
     }
   }
   return addEvent(elem, type, handler)
 }
 // 重载了addEvent函数，只会在用户手动触发时加载一次。
-var add1 = addEvent('div1', 'click', function(){
+var add1 = addEvent('div1', 'click', function () {
   console.log(1)
 })
-var add2 = addEvent('div2', 'click', function(){
+var add2 = addEvent('div2', 'click', function () {
   console.log(2)
 })
