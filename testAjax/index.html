@@ -18,35 +18,7 @@
 
 </body>
 <script>
-  function getUrlParam(weburl, name) {
-    var url = weburl
-    name = name.replace(/[[\]]/g, '\\$&')
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
-    var results = regex.exec(url)
 
-    if (!results) return null
-    if (!results[2]) return ''
-    var value = results[2].replace(/\+/g, '')
-
-    value = value.replace(/\//g, '')
-    return decodeURIComponent(value)
-  }
-  var downloadEnv = {
-    beta: 'https://web-s3.saybot.net/public/wxparentapp/download/download/index.html',
-    staging: 'https://web-s3-staging.alo7.com/public/wxparentapp/download/download/index.html',
-    prod: 'https://web-s3.alo7.com/public/wxparentapp/download/download/index.html'
-  }
-  var url = window.location.href
-  var env = url.indexOf('beta') > -1 ? 'beta' : 'prod'
-  var isLiarbry = url.indexOf('app/izy') > -1
-  var uid = getUrlParam(url, 'uid')
-  var source = 'librarybook'
-  var pathAll = encodeURIComponent('alo7student://' + 'www.alo7.com/librarybook/learn?entityId=' + uid)
-  if (isLiarbry && uid) {
-    window.location.href = downloadEnv[env] + '?source=' + encodeURIComponent(source) + '&pathAll=' + pathAll
-  } else {
-    window.location.href = downloadEnv[env] + '?source=' + encodeURIComponent(source)
-  }
 </script>
 
 </html>
