@@ -422,3 +422,67 @@ var add1 = addEvent('div1', 'click', function () {
 var add2 = addEvent('div2', 'click', function () {
   console.log(2)
 })
+
+// 函数节流 参数为传入的函数加时间段
+var throttle = function (fn, intervel) {
+  var firstTime = true
+  var timer
+  var _self = fn
+  return function () {
+    var _that = this
+    var arg = arguments
+    if (firstTime) {
+      _self.apply(_that, arg)
+      return firstTime = false
+    }
+    if (timer) {
+      return false
+    }
+    timer = setTimeout(() => {
+      clearTimeout(timer)
+      _self.apply(_that, arg)
+    }, intervel)
+  }
+}
+
+// 分时函数 一次性创建大量影响性能 分批创建多次
+// 参数， 数据，每个数据要做的的函数， 每次创建的数量
+var timeChunk = function (arr, fn, count) {
+  var times = Math.floor(arr.length / count)
+  var timer
+  const b = arr.length % count
+  var curIndex = 0
+  if (times) {
+    if (curIndex < times) {
+      timer = setInterval(() => {
+        var data = arr.slice(curIndex * count, (curIndex + 1) * count)
+        fn(data)
+        curIndex++
+      }, 200 * curIndex)
+    } else {
+      clearInterval(timer)
+      var data = arr.slice(curIndex * count, curIndex * count + b)
+      fn(data)
+    }
+  }
+}
+
+var timeChunk1 = function (arr, fn, count, intervel = 1000) {
+  var timer
+  var arg = arr
+  var start = function () {
+    for (var i = 0; i < Math.min(count || 1, arg.length); i++) {
+      var value = arr.shift()
+      fn(value)
+    }
+  }
+  return function () {
+    timer = setInterval(() => {
+      if (arg.length) {
+        clearInterval(timer)
+      } else {
+        start()
+      }
+    }, intervel)
+  }
+}

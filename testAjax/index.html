@@ -43,9 +43,9 @@
   var source = 'librarybook'
   var pathAll = encodeURIComponent('alo7student://' + 'www.alo7.com/librarybook/learn?entityId=' + uid)
   if (isLiarbry && uid) {
-    window.location.href = downloadEnv[env] + '?source=' + encodeURIComponent(source) + '&pathAll=' + encodeURIComponent(pathAll)
+    window.location.href = downloadEnv[env] + '?source=' + encodeURIComponent(source) + '&pathAll=' + pathAll
   } else {
-    window.location.href = downloadEnv[env]
+    window.location.href = downloadEnv[env] + '?source=' + encodeURIComponent(source)
   }
 </script>
 
