@@ -6,7 +6,6 @@
  * 4 new  如果new 返回一个新对象则this指向新对象。如果不是返回一个新对象则指向新实例。
  *
  */
-
 const arr = [1, 3, 5];
 for (let item of arr) {
   console.log(item);
@@ -117,7 +116,7 @@ Object.create = Object.create || function (obj) {
 
 // 1.4.5 javascript的原型继承
 // 怎么判断一个函数是不是可以用new的
-// 1
+// 1  new   非严格模式下 通过new调用的指向新对象， 不能通过new调用的指向window
 var fn = function () {
   console.log(this)
 }
@@ -131,5 +130,5 @@ var fn = function () {
 new fn() // ƒ () {
 //console.log(new.target)
 // }
-// new target  指向当前正在执行的函数
+// new target  指向当前正在执行的函数  不过在构造方法调用中，new.target指向被new调用的构造函数
 fn() // undefined

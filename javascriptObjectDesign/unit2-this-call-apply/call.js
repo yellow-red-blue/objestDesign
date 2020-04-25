@@ -3,7 +3,7 @@
 // 1， 函数调用
 // 2.对象调用   函数别名会导致this对象丢失
 // 3. 构造器  new 
-// 显示绑定 call  apply  bind
+// 4.显示绑定 call  apply  bind
 
 
 // 2 call  apply 
@@ -48,7 +48,7 @@ getName.apply(obj1) // seven
 getName.apply(obj2) // six
 
 // 实际开发中经常遇到this被不经意改变的事
-decodeURIComponent.getElementById('div1').onclick = function () {
+document.getElementById('div1').onclick = function () {
   console.log(this.id) //  this.div.id
   var func = function () {
     console.log(this.id) // undefined
@@ -62,7 +62,7 @@ decodeURIComponent.getElementById('div1').onclick = function () {
 Function.prototype.bind = Function.prototype.bind || function (context) {
   var that = this
   return function () {
-    return that.apply(context.arguments)
+    return that.apply(context, arguments)
   }
 }
 // 通常会实现的稍微复杂一点
@@ -72,7 +72,7 @@ Function.prototype.bind = function (context) {
   context = [].shift.call(arguments)
   console.log(context) // [{name: 'sob}]
   console.log(arguments) // [1, 2]
-  args = [].slice.call(arguments)[1, 2]
+  args = [].slice.call(arguments) //[1, 2]
   return function () {
     console.log(arguments) // [3, 4, 5, 6, 7]
     return that.apply(context, [].concat.call(args, [].slice.call(arguments)))
@@ -117,6 +117,6 @@ const min = Math.min.apply({}, arr1)
 console.log(min) // 1
 
 // 验证是不是数组
-Array.isArray = function(arr) {
+Array.isArray = function (arr) {
   return Object.prototype.toString.call(arr) === '[object Array]'
 }

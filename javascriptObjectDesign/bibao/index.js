@@ -66,7 +66,16 @@ var funcA = function () {
     console.log(a)
   }
 }
-
+var Type = {}
+var type = ['String', 'Array']
+for (var i = 0; i < type.length; i++) {
+  Type['is' + type[i]] = function (obj) {
+    console.log(i) // 'Array, Array'   函数延迟执行的时候的数组已经循环完毕，此时需要闭包 或者let
+    return Object.prototype.toString.call(obj) === `[object ${type[i]}]`
+  }
+}
+Type.isArray([])
+Type.isString('')
 var f = funcA()
 f() //2
 f() // 3
@@ -86,8 +95,8 @@ var funcA = (function () {
     console.log(a)
   }
 })()
-funcA()
-funcA()
+funcA() // 2
+funcA() // 3
 // 继续第一个
 var mult1 = function () {
   var cache = {}
@@ -159,16 +168,17 @@ appendDiv(function (data) {
 })
 // [5,4,1]
 [1, 4, 5].sort(function (a, b) {
-  return b - a
+  return a - b
 })
 // [1,4,5]
 
 
-// 将函数作为返回值输出
+// 将函数作为返回值输出 单例模式的单例函数
 var getSingle = function (fn) {
   var ret
   return function () {
     console.log(ret)
+    // 截获当前执行上下文。
     return ret || fn.apply(this, arguments)
   }
 }
@@ -185,25 +195,30 @@ console.log(script1 === script2) // true
 // 高阶函数实现aop
 Function.prototype.beforeFn = function (fn) {
   var _self = this
-  console.log('000')
-  console.log(this)
-  console.log('000')
   return function () {
-    console.log(this)
     fn.apply(this, arguments) //执行新函数 修正this
     return _self.apply(this, arguments) // 执行原函数
   }
 }
-
+Function.prototype.afterFn = function (fn) {
+  var _self = this
+  return function () {
+    var ret = _self.apply(this, arguments) // 执行原函数 修正this
+    console.log(ret)
+    fn.apply(this, arguments) // 执行新函数
+    return ret
+  }
+}
 var func = function () {
   console.log(2)
 }
+
 func = func.beforeFn(function () {
   console.log(1)
+}).afterFn(function () {
+  console.log(3)
 })
-console.log(func)
 func()
-
 // 函数柯里化
 var cost = (function () {
   var arg = []
@@ -285,7 +300,7 @@ var throttle = function (fn, intervel) {
     firstTime = true
   return function () {
     var arg = arguments,
-      _me = this  // 
+      _me = this // 
 
     if (firstTime) {
       _self.apply(_me, arg) // 将fn函数的this指向执行时的上下文
@@ -309,10 +324,165 @@ var obj = {
     console.log(this)
     console.log(this.name)
   },
-  getConsole1: function() {
+  getConsole1: function () {
     console.log(this.name)
   }
 }
 
 obj.onresize = throttle(obj.getConsole, 500)
 obj.onresize1 = throttle(obj.getConsole1, 500)
+
+// 分时函数   分时函数参数为传入的数据，要运行的函数，每次运行的数量  运行的时间间隔
+var timeChunk = function (arg, fn, count, intervel = 200) {
+  var t
+  var start = function () {
+    for (var i = 0; i < Math.min(count || 1, arg.length); i++) {
+      var obj = arg.shift()
+      fn(obj)
+    }
+  }
+  return function () {
+    if (arg.length === 0) {
+      clearInterval(t)
+      return false
+    } else {
+      t = setInterval(function () {
+        start()
+      }, intervel)
+    }
+  }
+}
+
+var ary = []
+for (let i = 0; i < 1000; i++) {
+  ary.push(i)
+}
+var renderList = timeChunk(ary, function (obj) {
+  var div = document.createElement('div')
+  div.innerHTML = obj
+  document.body.appendChild(div)
+}, 100, 3000)
+
+renderList()
+
+// 惰性加载函数。
+// 常见写法
+var addEvent = function (elem, type, handler) {
+  if (window.addEventListener) {
+    return elem.addEventListener(type, handler, false)
+  }
+  if (window.attachEvent) {
+    return elem.attachEvent('on' + type, handler)
+  }
+}
+var add1 = addEvent('div1', 'click', function () {
+  console.log(1)
+})
+var add1 = addEvent('div2', 'click', function () {
+  console.log(2)
+})
+// 每次绑定都会走一遍条件语句
+
+// 第二种方法
+var addEvent = (function () {
+  if (window.addEventListener) {
+    return function (elem, type, handler) {
+      return elem.addEventListener(type, handler, false)
+    }
+  }
+  if (window.attachEvent) {
+    return function (elem, type, handler) {
+      return elem.attachEvent('on' + type, handler)
+    }
+  }
+})()
+var add1 = addEvent('div2', 'click', function () {
+  console.log(2)
+})
+// 必须执行一次if条件，，如果我们没用到就会造成浪费
+
+// 
+var addEvent = function (elem, type, handler) {
+  if (window.addEventListener) {
+    addEvent = function (elem, type, handler) {
+      return elem.addEventListener(type, handler, false)
+    }
+  }
+  if (window.attachEvent) {
+    addEvent = function (elem, type, handler) {
+      return elem.attachEvent('on' + type, handler)
+    }
+  }
+  return addEvent(elem, type, handler)
+}
+// 重载了addEvent函数，只会在用户手动触发时加载一次。
+var add1 = addEvent('div1', 'click', function () {
+  console.log(1)
+})
+var add2 = addEvent('div2', 'click', function () {
+  console.log(2)
+})
+
+// 函数节流 参数为传入的函数加时间段
+var throttle = function (fn, intervel) {
+  var firstTime = true
+  var timer
+  var _self = fn
+  return function () {
+    var _that = this
+    var arg = arguments
+    if (firstTime) {
+      _self.apply(_that, arg)
+      return firstTime = false
+    }
+    if (timer) {
+      return false
+    }
+    timer = setTimeout(() => {
+      clearTimeout(timer)
+      _self.apply(_that, arg)
+    }, intervel)
+  }
+}
+
+// 分时函数 一次性创建大量影响性能 分批创建多次
+// 参数， 数据，每个数据要做的的函数， 每次创建的数量
+var timeChunk = function (arr, fn, count) {
+  var times = Math.floor(arr.length / count)
+  var timer
+  const b = arr.length % count
+  var curIndex = 0
+  if (times) {
+    if (curIndex < times) {
+      timer = setInterval(() => {
+        var data = arr.slice(curIndex * count, (curIndex + 1) * count)
+        fn(data)
+        curIndex++
+      }, 200 * curIndex)
+    } else {
+      clearInterval(timer)
+      var data = arr.slice(curIndex * count, curIndex * count + b)
+      fn(data)
+    }
+  }
+}
+
+var timeChunk1 = function (arr, fn, count, intervel = 1000) {
+  var timer
+  var arg = arr
+  var start = function () {
+    for (var i = 0; i < Math.min(count || 1, arg.length); i++) {
+      var value = arr.shift()
+      fn(value)
+    }
+  }
+  return function () {
+    timer = setInterval(() => {
+      if (arg.length) {
+        clearInterval(timer)
+      } else {
+        start()
+      }
+    }, intervel)
+  }
+}

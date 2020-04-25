@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./89/fav.css">
+  <title>Document</title>
+</head>
+<style>
+  #yy {
+    color: red;
+  }
+</style>
+
+<body>
+  <div id="yy">3333</div>
+</body>
+<script>
+  var arr1 = new Array(100)
+  for (var i = 0; i < arr1.length; i++) {
+    arr1[i] = i
+  }
+  var createDiv = (a) => {
+    var div = document.createElement('div')
+    div.innerHTML = a
+    document.body.appendChild(div)
+  }
+  // var timeChunk = function (arr, fn, count) {
+  //   var times = Math.floor(arr.length / count)
+  //   var timer
+  //   const b = arr.length % count
+  //   var curIndex = 0
+  //   return function () {
+  //     if (times) {
+  //       if (curIndex < times) {
+  //         timer = setInterval(() => {
+  //           if ((curIndex + 1) * count > arr.length) {
+  //             clearInterval(timer)
+  //           }
+  //           var data = arr.slice(curIndex * count, (curIndex + 1) * count)
+  //           data.forEach(i => {
+  //             fn(i)
+  //           })
+  //           console.log(999)
+  //           curIndex = curIndex + 1
+  //         }, 2000)
+  //         console.log(timer + 'timer')
+  //       }
+  //     }
+  //   }
+  // }
+  // var s = timeChunk(arr1, createDiv, 60)
+
+  // s()
+  var timeChunk1 = function (arr, fn, count, intervel = 4000) {
+    var timer
+    var arg = arr
+    var len = arr.length
+    var start = function () {
+      var len = Math.min(count || 1, arg.length)
+      for (var i = 0; i < len; i++) {
+        var value = arg.shift()
+        fn(value)
+      }
+    }
+    return function () {
+      timer = setInterval(() => {
+        // console.log(arg)
+        if (!arg.length) {
+          clearInterval(timer)
+        } else {
+          // console.log(999)
+          start()
+        }
+      }, intervel)
+    }
+  }
+  var s = timeChunk1(arr1, createDiv, 60)
+
+  s()
+</script>
+
+</html>

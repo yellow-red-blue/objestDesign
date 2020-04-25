@@ -87,3 +87,66 @@ var strateies = {
 var calBounsSalary = (level, salary) => {
   return strateies[level] * salary
 }
+
+// 表单验证。 练习，分析因为表单验证类和返回消息类。
+// 策略类
+var strategies = {
+  isNonEmpty(value, errMsg) {
+    if(value === '') {
+      return errMsg
+    }
+  },
+  minLength(value, length, errMsg) {
+    if(value.length < length) {
+      return errMsg
+    }
+  },
+  maxLength(value, length, errMsg) {
+    if (value.length > length) {
+      return errMsg
+    }
+  },
+  isMobile(value, errMsg) {
+    if(!/(^1[3|5|7|8][0-9]{9}$)/.test(value)){
+      return errMsg
+    }
+  }
+}
+// validator类。负责接收用户的请求 并委托给strategy对象。
+var validataFunc = function() {
+  var validator = new Validator()
+  // 添加策略guize
+  validator.add(resisterForm.userName, 'isNonEmpty', '用户名不能为空')
+  validator.add(resisterForm.pwd, 'minLength:6', '密码长度不能少于6位')
+  validator.add(resisterForm.moblie, 'isMobile', '请输入正确的手机号')
+  var errMsg = validator.start()
+  return errMsg
+}
+var errMsg = validataFunc()
+if (errMsg) {
+  alert(errMsg)
+}
+var Validator = function() {
+  this.cache = []
+}
+Validator.prototype.add = function(value, rule, errMsg) {
+  var arg = rule.split(':')
+  var _self = this
+  this.cache.push(function(){
+    var strategy = arg.shift()
+    arg.unshift(value)
+    arg.push(errMsg)
+    return strategies[strategy].apply(_self, arg)
+  })
+}
+
+Validator.prototype.start = function() {
+  for(var i = 0; i < this.cache.length; i++) {
+    var sta = this.cache[i]
+    var errMsg = sta()
+    if(errMsg) {
+      return errMsg
+    }
+  }
+}
+
